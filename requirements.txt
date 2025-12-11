@@ -1,3 +1,4 @@
+pip>=21.3
 python-telegram-bot==20.6
 yt-dlp==2025.06.30
 requests==2.32.4
