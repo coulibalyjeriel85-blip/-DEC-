@@ -1,10 +1,9 @@
 import logging
 import time
-import threading
+import asyncio
 from flask import Flask
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-
 
 from commands.kick import kick
 from commands.unban import unban
@@ -33,20 +32,20 @@ from commands.tagall import tagall
 
 TOKEN = "8449034813:AAFr7oASZ5MO_cv_W8Lffm-9c21YRIDCkYY"
 
-logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
-# KYOTAKA 
 app_flask = Flask(__name__)
 
 @app_flask.route("/")
 def home():
     return "Bot Telegram DarkAI est en ligne ✅"
 
-# KYOTAKA 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🔮 Bienvenue dans DarkAI Bot.\nTape /help pour voir les commandes.")
+    await update.message.reply_text(
+        "🔮 Bienvenue dans DarkAI Bot.\nTape /help pour voir les commandes."
+    )
 
-def start_bot():
+async def run_bot():
     app = ApplicationBuilder().token(TOKEN).build()
     app.bot_data["start_time"] = time.time()
 
@@ -76,10 +75,17 @@ def start_bot():
     app.add_handler(CommandHandler("tagall", tagall))
     app.add_handler(CommandHandler(["ai", "kyo"], ai_kyo))
 
-    app.run_polling()
+    await app.initialize()
+    await app.start()
+    await app.bot.initialize()
+    await app.updater.start_polling()
+    await asyncio.Event().wait()
+
+def main():
+    loop = asyncio.get_event_loop()
+    loop.create_task(run_bot())
+    app_flask.run(host="0.0.0.0", port=10000)
 
 if __name__ == "__main__":
-    # DarkXMD
-    threading.Thread(target=start_bot).start()
-    # DARKXMD
-    app_flask.run(host="0.0.0.0", port=10000)
+    main()
+    
